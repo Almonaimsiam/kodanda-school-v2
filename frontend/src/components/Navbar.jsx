@@ -10,25 +10,24 @@ export default function Navbar() {
   const [student, setStudent] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    // SAFETY FIX: If there is old data in localStorage, delete it forever.
+useEffect(() => {
+    // SECURITY FIX: Explicitly clear localStorage in case old data exists
     localStorage.removeItem('student');
     localStorage.removeItem('token');
 
     const savedStudent = sessionStorage.getItem('student');
     if (savedStudent) {
-      setStudent(JSON.parse(savedStudent));
+        setStudent(JSON.parse(savedStudent));
     } else {
-      setStudent(null);
+        setStudent(null);
     }
-  }, [location]); 
+}, [location]);
 
-  const handleLogout = () => {
-    sessionStorage.clear(); // Clears everything
+const handleLogout = () => {
+    sessionStorage.clear(); // This wipes the session data
     setStudent(null);
-    navigate('/'); // Redirect to normal website home
-  };
-
+    navigate('/'); // Send to home page
+};
   return (
     <nav className="bg-primary text-secondary shadow-lg sticky top-0 z-40">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">

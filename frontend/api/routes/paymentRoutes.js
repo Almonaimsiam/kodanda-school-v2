@@ -3,10 +3,9 @@ const SSLCommerzPayment = require('sslcommerz-lts');
 const router = express.Router();
 const Student = require('../models/Student');
 
-// Use your Vercel URL - Ensure NO double declaration
+// NO trailing slash here to prevent URL errors
 const SITE_URL = "https://kodanda-school-project-v2.vercel.app";
 
-// 🟢 ROUTE: INITIALIZE PAYMENT
 router.post('/init', async (req, res) => {
     try {
         const { studentId, name, amount } = req.body;
@@ -16,7 +15,6 @@ router.post('/init', async (req, res) => {
             total_amount: amount,
             currency: 'BDT',
             tran_id: tran_id,
-            // These are the internal API endpoints
             success_url: `${SITE_URL}/api/payment/success/${tran_id}`,
             fail_url: `${SITE_URL}/api/payment/fail/${tran_id}`,
             cancel_url: `${SITE_URL}/api/payment/cancel`,
@@ -43,22 +41,18 @@ router.post('/init', async (req, res) => {
     }
 });
 
-// 🟢 ROUTE: PAYMENT SUCCESS (SSLCommerz POSTs here)
 router.post('/success/:tran_id', async (req, res) => {
     try {
         const studentId = req.body.value_a;
-        // Update database
         await Student.findOneAndUpdate({ studentId: studentId }, { tuitionFeePaid: true });
 
-        // Redirect to the FRONTEND page (Notice: no /api/ in this link)
+        // Redirect directly to frontend success route
         res.redirect(`${SITE_URL}/payment-success/${req.params.tran_id}`);
     } catch (error) {
-        console.error("Success Redirect Error:", error);
         res.redirect(`${SITE_URL}/payment-fail`);
     }
 });
 
-// 🔴 ROUTE: PAYMENT FAIL
 router.post('/fail/:tran_id', async (req, res) => {
     res.redirect(`${SITE_URL}/payment-fail`);
 });

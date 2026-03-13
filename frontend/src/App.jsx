@@ -1,4 +1,3 @@
-// 🟦[TEMPLATE: APP_ROUTING_WITH_CONTEXT]
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { LanguageProvider } from './context/LanguageContext';
 import TopNoticeBar from './components/TopNoticeBar';
@@ -29,7 +28,7 @@ function App() {
             {/* Payment Routes */}
             <Route path="/payment" element={<Payment />} />
             <Route path="/payment-success/:tranId" element={<PaymentSuccess />} />
-            <Route path="/payment-success" element={<PaymentSuccess />} /> {/* Backup route if ID is missing */}
+            <Route path="/payment-success" element={<PaymentSuccess />} /> 
             <Route path="/payment-fail" element={<PaymentFail />} />
             
             {/* Placeholders */}
