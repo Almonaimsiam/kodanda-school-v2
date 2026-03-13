@@ -1,88 +1,96 @@
-const express = require('express');
-const SSLCommerzPayment = require('sslcommerz-lts');
-const router = express.Router();
-const Student = require('../models/Student');
+// 🟦[TEMPLATE: DYNAMIC_PAYMENT_CHECKOUT]
+// A checkout page where the user can input their own payment amount.
 
-// Credentials from Render Environment Variables
-const store_id = process.env.STORE_ID;
-const store_passwd = process.env.STORE_PASSWORD;
-const is_live = process.env.IS_LIVE === 'true'; 
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-// URLs - Change these if your URLs ever change
-// URLs - Change these to your VERCEL link!
-const BACKEND_URL = "https://kodanda-school-project-v2.vercel.app";
-const FRONTEND_URL = "https://kodanda-school-project-v2.vercel.app";
+export default function Payment() {
+  const navigate = useNavigate();
+  const [student, setStudent] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const[amount, setAmount] = useState(''); // NEW: State to hold the custom amount
 
-// 🟢 ROUTE: INITIALIZE PAYMENT
-router.post('/init', async (req, res) => {
-    try {
-        const { studentId, name, amount } = req.body;
-        const tran_id = `REF_${Date.now()}`;
-
-        const data = {
-            total_amount: amount,
-            currency: 'BDT',
-            tran_id: tran_id,
-            success_url: `${BACKEND_URL}/api/payment/success/${tran_id}`,
-            fail_url: `${BACKEND_URL}/api/payment/fail/${tran_id}`,
-            cancel_url: `${BACKEND_URL}/api/payment/cancel`,
-            ipn_url: `${BACKEND_URL}/api/payment/ipn`,
-            shipping_method: 'No',
-            product_name: 'Monthly Tuition Fee',
-            product_category: 'Education',
-            product_profile: 'non-physical-goods',
-            cus_name: name,
-            cus_email: 'student@kodandaschool.com',
-            cus_add1: 'Kodanda',
-            cus_city: 'Dhaka',
-            cus_postcode: '1000',
-            cus_country: 'Bangladesh',
-            cus_phone: '01700000000',
-            value_a: studentId 
-        };
-
-        const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
-        sslcz.init(data).then(apiResponse => {
-            let GatewayPageURL = apiResponse.GatewayPageURL;
-            res.status(200).json({ paymentUrl: GatewayPageURL });
-        }).catch(err => {
-            console.error("SSL Init Error:", err);
-            res.status(500).json({ message: "SSLCommerz Initialization Failed" });
-        });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error during payment init" });
+  useEffect(() => {
+    const savedStudent = localStorage.getItem('student');
+    if (!savedStudent) {
+      navigate('/login'); 
+    } else {
+      setStudent(JSON.parse(savedStudent));
     }
-});
+  }, [navigate]);
 
-// 🟢 ROUTE: PAYMENT SUCCESS (FIXED REDIRECT URL)
-router.post('/success/:tran_id', async (req, res) => {
-    try {
-        const studentId = req.body.value_a;
-
-        // Update database
-        await Student.findOneAndUpdate(
-            { studentId: studentId }, 
-            { tuitionFeePaid: true }
-        );
-
-        // ✅ FIX: Added the Transaction ID to the URL!
-        res.redirect(`${FRONTEND_URL}/payment-success/${req.params.tran_id}`);
-    } catch (error) {
-        console.error("Payment Success Error:", error);
-        res.redirect(`${FRONTEND_URL}/payment-fail`);
+  const handlePayment = async () => {
+    // Basic validation: Make sure they entered a valid number greater than 0
+    if (!amount || parseInt(amount) <= 0) {
+      alert("Please enter a valid amount!");
+      return;
     }
-});
 
-// 🔴 ROUTE: PAYMENT FAIL
-router.post('/fail/:tran_id', async (req, res) => {
-    res.redirect(`${FRONTEND_URL}/payment-fail`);
-});
+    setLoading(true);
+    try {
+      // ✅ FIX: Added the missing '/' right before api!
+      const response = await fetch('/api/payment/init', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId: student.studentId,
+          name: student.name,
+          amount: parseInt(amount) // Send the typed amount to backend!
+        })
+      });
 
-// 🟡 ROUTE: PAYMENT CANCEL
-router.post('/cancel', async (req, res) => {
-    res.redirect(`${FRONTEND_URL}/payment-fail`);
-});
+      const data = await response.json();
 
-module.exports = router;
+      if (data.paymentUrl) {
+        window.location.replace(data.paymentUrl);
+      } else {
+        alert("Payment Gateway Failed to Load.");
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Server Error. Make sure backend is running.");
+      setLoading(false);
+    }
+  };
+
+  if (!student) return <div className="text-center mt-20 font-bold text-primary">Loading...</div>;
+
+  return (
+    <div className="flex justify-center items-center min-h-[70vh]">
+      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md border-t-4 border-primary text-center">
+        <h2 className="text-2xl font-bold text-primary mb-6">Pay School Fees</h2>
+        
+        {/* Student Details Card */}
+        <div className="bg-gray-100 p-4 rounded mb-6 text-left border border-gray-200 shadow-inner">
+          <p className="mb-1"><strong className="text-gray-700">Student Name:</strong> {student.name}</p>
+          <p className="mb-1"><strong className="text-gray-700">Student ID:</strong> {student.studentId}</p>
+          <p><strong className="text-gray-700">Class:</strong> {student.class}</p>
+        </div>
+
+        {/* Input for Amount */}
+        <div className="mb-6 text-left">
+          <label className="block text-gray-800 font-bold mb-2">
+            Enter Amount (BDT):
+          </label>
+          <input 
+            type="number" 
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="e.g. 500"
+            className="w-full border-2 border-gray-300 p-3 rounded focus:outline-none focus:border-primary text-lg"
+            required
+          />
+        </div>
+
+        <button 
+          onClick={handlePayment} 
+          disabled={loading}
+          className="w-full bg-green-500 text-white font-bold py-3 rounded hover:bg-green-600 transition shadow-lg flex justify-center items-center text-lg"
+        >
+          {loading ? "Connecting Gateway..." : `Pay Now via SSLCommerz`}
+        </button>
+      </div>
+    </div>
+  );
+}
