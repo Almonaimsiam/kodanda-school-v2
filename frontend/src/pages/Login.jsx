@@ -28,9 +28,9 @@ export default function Login() {
       if (response.ok) {
         setMessage('✅ Login Successful!');
         
-        // Save the token and student data to LocalStorage so the browser remembers them!
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('student', JSON.stringify(data.student));
+       // Save the token and student data to SessionStorage so it resets when they leave!
+sessionStorage.setItem('token', data.token);
+sessionStorage.setItem('student', JSON.stringify(data.student));
         
         // Send them to the Home page (or dashboard) after login
         setTimeout(() => navigate('/'), 1000); 

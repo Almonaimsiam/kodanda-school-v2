@@ -11,7 +11,7 @@ export default function Payment() {
   const[amount, setAmount] = useState(''); // NEW: State to hold the custom amount
 
   useEffect(() => {
-    const savedStudent = localStorage.getItem('student');
+    const savedStudent = sessionStorage.getItem('student');
     if (!savedStudent) {
       navigate('/login'); 
     } else {

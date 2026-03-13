@@ -13,7 +13,7 @@ export default function Navbar() {
 
   // This will now properly run every time the page changes (like after logging in!)
   useEffect(() => {
-    const savedStudent = localStorage.getItem('student');
+    const savedStudent = sessionStorage.getItem('student');
     if (savedStudent) {
       setStudent(JSON.parse(savedStudent));
     } else {
@@ -22,8 +22,8 @@ export default function Navbar() {
   }, [location]); 
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('student');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('student');
     setStudent(null);
     navigate('/login');
   };
