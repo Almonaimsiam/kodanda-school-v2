@@ -11,17 +11,22 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
 useEffect(() => {
-    // SECURITY FIX: Explicitly clear localStorage in case old data exists
-    localStorage.removeItem('student');
-    localStorage.removeItem('token');
+  // CRITICAL SECURITY: Clear ALL localStorage every time the site loads.
+  // This prevents users from being remembered across tabs or reloads.
+  localStorage.clear(); 
 
-    const savedStudent = sessionStorage.getItem('student');
-    if (savedStudent) {
-        setStudent(JSON.parse(savedStudent));
-    } else {
-        setStudent(null);
+  const savedStudent = sessionStorage.getItem('student');
+  if (savedStudent) {
+    setStudent(JSON.parse(savedStudent));
+  } else {
+    setStudent(null);
+    // If we are on the payment page but not logged in, kick them to login
+    if (location.pathname === '/payment') {
+      navigate('/login');
     }
-}, [location]);
+  }
+}, [location, navigate]);
+
 
 const handleLogout = () => {
     sessionStorage.clear(); // This wipes the session data
