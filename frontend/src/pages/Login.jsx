@@ -1,6 +1,4 @@
 // 🟦 [TEMPLATE: LOGIN_FORM_FETCH]
-// A standard Login form that verifies credentials and saves the JWT token.
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -17,7 +15,8 @@ export default function Login() {
     e.preventDefault();
     
     try {
-     const response = await fetch('https://kodanda-school-project-v2.vercel.app/api/auth/login', {
+      // ✅ FIX: Removed the absolute URL to fix CORS issues
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -27,12 +26,8 @@ export default function Login() {
       
       if (response.ok) {
         setMessage('✅ Login Successful!');
-        
-       // Save the token and student data to SessionStorage so it resets when they leave!
-sessionStorage.setItem('token', data.token);
-sessionStorage.setItem('student', JSON.stringify(data.student));
-        
-        // Send them to the Home page (or dashboard) after login
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('student', JSON.stringify(data.student));
         setTimeout(() => navigate('/'), 1000); 
       } else {
         setMessage(`❌ Error: ${data.message}`);
@@ -50,20 +45,9 @@ sessionStorage.setItem('student', JSON.stringify(data.student));
         {message && <p className="text-center font-bold mb-4 text-gray-700">{message}</p>}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <input 
-            type="text" name="studentId" placeholder="Student ID" required
-            onChange={handleChange}
-            className="border-2 border-gray-200 p-2 rounded focus:outline-none focus:border-primary"
-          />
-          <input 
-            type="password" name="password" placeholder="Password" required
-            onChange={handleChange}
-            className="border-2 border-gray-200 p-2 rounded focus:outline-none focus:border-primary"
-          />
-          
-          <button type="submit" className="bg-primary text-secondary font-bold py-2 rounded hover:bg-blue-700 transition mt-2">
-            Login
-          </button>
+          <input type="text" name="studentId" placeholder="Student ID" required onChange={handleChange} className="border-2 border-gray-200 p-2 rounded focus:outline-none focus:border-primary" />
+          <input type="password" name="password" placeholder="Password" required onChange={handleChange} className="border-2 border-gray-200 p-2 rounded focus:outline-none focus:border-primary" />
+          <button type="submit" className="bg-primary text-secondary font-bold py-2 rounded hover:bg-blue-700 transition mt-2">Login</button>
         </form>
 
         <p className="text-center text-sm text-gray-500 mt-4">
