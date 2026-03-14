@@ -1,0 +1,21 @@
+{
+  "name": "kodanda-school",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+  "backend": "npm start --prefix backend",
+  "frontend": "npm run dev --prefix frontend",
+  "dev": "concurrently \"npm run backend\" \"npm run frontend\""
+},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Almonaimsiam/kodanda-school/issues"
+  },
+  "homepage": "https://github.com/Almonaimsiam/kodanda-school#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
